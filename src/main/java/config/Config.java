@@ -8,7 +8,7 @@ public class Config {
     public static Color color = Color.white;
     public static String librarianLogin = "root";
     public static String librarianPass = "root";
-    public static String serverURL = "//84.237.50.81:8080/apex:";
+    public static String serverURL = "jdbc:oracle:thin:@84.237.50.81:1521:XE";
     public static String serverLogin = "20206_Gudkov";
     public static String serverPass = "";
 }
