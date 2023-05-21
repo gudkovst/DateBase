@@ -5,11 +5,13 @@ import queries.Queries;
 import queries.TypeSearchBook;
 
 import java.sql.*;
+import java.util.Map;
 
 public class Requester {
     private Connection connection;
 
     public Requester(){
+        Queries.setLibrarianQueries();
         try {
             Class.forName("oracle.jdbc.driver.OracleDriver");
         } catch (ClassNotFoundException e1) {
@@ -24,16 +26,6 @@ public class Requester {
             System.out.println("Нет подключения к серверу:" + e);
             System.exit(0);
         }
-    }
-
-    public Statement requestFormular(String secondName, String name) throws SQLException {
-        String sql = String.format(Queries.readerFormularOn, secondName, name) + "; " +
-                String.format(Queries.readerFormularOut, secondName, name);
-        Statement st = connection.createStatement();
-        boolean res = st.execute(sql);
-        if (res)
-            return st;
-        return null;
     }
 
     public ResultSet requestBooks(TypeSearchBook typeRequest, String data) throws SQLException {
@@ -81,5 +73,12 @@ public class Requester {
     public void regLibrarian(Integer id, Integer hall, String name, String secondName, Date birthdate) throws SQLException {
         String sql = String.format(Queries.regLibrarian, id, hall, name, secondName, birthdate);
         connection.createStatement().executeQuery(sql);
+    }
+
+    public Statement librarianQueries(String query, String[] args) throws SQLException {
+        Statement statement = connection.createStatement();
+        String sql = Queries.getLibrarianQuerySql(query);
+        statement.executeQuery(String.format(sql, args));
+        return statement;
     }
 }
