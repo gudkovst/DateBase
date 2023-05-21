@@ -2,6 +2,7 @@ package view;
 
 import application.Requester;
 import config.Config;
+import queries.Queries;
 import queries.TypeSearchBook;
 
 import javax.swing.*;
@@ -9,11 +10,13 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class ViewSwing extends JFrame implements IView, Runnable {
     private final JPanel entryField;
@@ -49,7 +52,13 @@ public class ViewSwing extends JFrame implements IView, Runnable {
     }
 
     private void draw(List<Component> components){
-        draw((Component[]) components.toArray());
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            entryField.removeAll();
+            entryField.setLayout(new GridLayout(components.size(), 1));
+            for (Component component: components)
+                entryField.add(component);
+            setContentPane(entryField);
+        });
     }
 
     @Override
@@ -87,8 +96,8 @@ public class ViewSwing extends JFrame implements IView, Runnable {
         reg.addActionListener(e -> readerRegistration());
         JButton find = new JButton("Find book");
         find.addActionListener(e -> readerFindBook());
-        JButton form = new JButton("Show formular");
-        form.addActionListener(e -> readerShowFormular());
+        JButton form = new JButton("Show popular books");
+        form.addActionListener(e -> readerShowPopularBooks());
         draw(new Component[]{label, reg, find, form});
     }
 
@@ -314,26 +323,7 @@ public class ViewSwing extends JFrame implements IView, Runnable {
     }
 
     @Override
-    public void readerShowFormular() {///переделать!!!!!
-        JLabel nameLabel = new JLabel("Enter your name and secondName");
-        nameLabel.setHorizontalAlignment(JLabel.CENTER);
-        JTextField data = new JTextField();
-        data.setHorizontalAlignment(JTextField.CENTER);
-        JButton button = new JButton("OK");
-        button.setMnemonic(KeyEvent.VK_ENTER);
-        /*button.addActionListener(e -> {
-            try {
-                String reader = data.getText();
-                String[] res = reader.split("\\W");
-                Statement statement = requester.requestFormular(res[1], res[0]);
-                if (statement == null){
-                    JLabel label = new JLabel("");
-                }
-            } catch (SQLException exc) {
-                throw new RuntimeException(exc);
-            }
-        });*/
-
+    public void readerShowPopularBooks() {
 
     }
 
@@ -382,7 +372,28 @@ public class ViewSwing extends JFrame implements IView, Runnable {
 
     @Override
     public void librarianSelect() {
+        Map<String, String[]> queries = Queries.getLibrarianQueriesArgs();
+        List<JButton> queriesButtons = new ArrayList<>();
+        for (String query: queries.keySet()){
+            JButton button = new JButton(query);
+            button.addActionListener(e -> {
+                List<Component> form = createForm(queries.get(query));
+                JButton ok = new JButton("OK");
+                ok.setMnemonic(KeyEvent.VK_ENTER);
+                ok.addActionListener(e1 -> {
+                    String[] args = new String[form.size() / 2];
+                    for (int i = 0; i < form.size() / 2; i ++)
+                        args[i] = ((JTextField) form.get(2*i + 1)).getText();
+                    try {
+                        Statement statement = requester.librarianQueries(query, args);
 
+
+                    } catch (SQLException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                });
+            });
+        }
     }
 
     @Override

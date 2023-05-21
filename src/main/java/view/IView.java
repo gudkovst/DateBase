@@ -8,7 +8,7 @@ public interface IView {
     public void readerMenu();
     public void readerRegistration();
     public void readerFindBook();
-    public void readerShowFormular();
+    public void readerShowPopularBooks();
 
     //for librarians
     public void librarianMenu();
