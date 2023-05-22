@@ -41,7 +41,7 @@ public class Requester {
         return connection.createStatement().executeQuery(Queries.libraries);
     }
     
-    public void registerReader(Integer id, String name, String secondName, String birthdate, Integer library) throws SQLException {
+    public void registerReader(Integer id, String name, String secondName, Date birthdate, Integer library) throws SQLException {
         String sql = String.format(Queries.registrationReader, id, name, secondName, birthdate, library);
         connection.createStatement().executeQuery(sql);
     }
@@ -73,7 +73,6 @@ public class Requester {
 
     public void regLibrarian(Integer id, Integer hall, String name, String secondName, Date birthdate) throws SQLException {
         String sql = String.format(Queries.regLibrarian, id, hall, name, secondName, birthdate);
-        System.out.println(sql);
         connection.createStatement().executeQuery(sql);
     }
 
