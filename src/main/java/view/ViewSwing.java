@@ -304,7 +304,7 @@ public class ViewSwing extends JFrame implements IView, Runnable {
             ResultSet res = requester.requestBooks(typeRequest, data);
             List<Component> list = new ArrayList<>();
             while (res.next()){
-                JLabel label = new JLabel(res.getString("Nomenclature number") + " - " +
+                JLabel label = new JLabel(res.getString("NomenclatureNumber") + " - " +
                         res.getString("Name"));
                 label.setHorizontalAlignment(JLabel.CENTER);
                 list.add(label);
@@ -413,18 +413,19 @@ public class ViewSwing extends JFrame implements IView, Runnable {
         JButton ok = new JButton("Enter");
         ok.setMnemonic(KeyEvent.VK_ENTER);
         ok.addActionListener(e -> {
-            JTextField name = (JTextField) form.get(1);
-            JTextField secondName = (JTextField) form.get(3);
-            JTextField birthdate = (JTextField) form.get(5);
-            JTextField hallNumber = (JTextField) form.get(7);
+            JTextField name = (JTextField) form.get(3);
+            JTextField secondName = (JTextField) form.get(5);
+            JTextField birthdate = (JTextField) form.get(7);
+            JTextField hallNumber = (JTextField) form.get(9);
             try {
                 Integer idn = Integer.parseInt(id.getText());
                 Integer hall = Integer.parseInt(hallNumber.getText());
-                Date date = new SimpleDateFormat("dd/MM/yyyy").parse(birthdate.getText());
-                requester.regLibrarian(idn, hall, name.getText(), secondName.getText(), (java.sql.Date) date);
+                Date date = new SimpleDateFormat("dd.MM.yyyy").parse(birthdate.getText());
+                java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+                requester.regLibrarian(idn, hall, name.getText(), secondName.getText(), sqlDate);
                 librarianMenu();
             } catch (SQLException ex) {
-                JLabel label = new JLabel("Sorry, impossible do anything");
+                JLabel label = new JLabel("Sorry, impossible do anything" + ex);
                 label.setHorizontalAlignment(JLabel.CENTER);
                 JButton ret = new JButton("return");
                 ret.addActionListener(ev -> librarianMenu());
