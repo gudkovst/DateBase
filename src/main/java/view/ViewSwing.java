@@ -152,10 +152,12 @@ public class ViewSwing extends JFrame implements IView, Runnable {
                 JTextField name = (JTextField) form.get(3);
                 JTextField secondName = (JTextField) form.get(5);
                 JTextField birthdate = (JTextField) form.get(7);
+                Date date = new SimpleDateFormat("dd.MM.yyyy").parse(birthdate.getText());
+                java.sql.Date sqlDate = new java.sql.Date(date.getTime());
                 Integer idn = Integer.parseInt(id.getText());
-                requester.registerReader(idn, name.getText(), secondName.getText(), birthdate.getText(), library);
+                requester.registerReader(idn, name.getText(), secondName.getText(), sqlDate, library);
                 chooseCategories(idn);
-            } catch (SQLException ex) {
+            } catch (SQLException | ParseException ex) {
                 JLabel label = new JLabel("Failed create reader: " + ex);
                 label.setHorizontalAlignment(JLabel.CENTER);
                 JButton ret = new JButton("return");
