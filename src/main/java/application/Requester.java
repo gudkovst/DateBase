@@ -29,10 +29,11 @@ public class Requester {
     }
 
     public ResultSet requestBooks(TypeSearchBook typeRequest, String data) throws SQLException {
-        String sql = switch (typeRequest) {
-            case NAME -> String.format(Queries.searchBookName, data);
-            case AUTHOR -> String.format(Queries.searchBookAuthor, data);
-        };
+        String sql = null;
+        if (typeRequest == TypeSearchBook.NAME)
+            sql = String.format(Queries.searchBookName, data);
+        if (typeRequest == TypeSearchBook.AUTHOR)
+            sql = String.format(Queries.searchBookAuthor, data);
         return connection.createStatement().executeQuery(sql);
     }
 
@@ -72,6 +73,7 @@ public class Requester {
 
     public void regLibrarian(Integer id, Integer hall, String name, String secondName, Date birthdate) throws SQLException {
         String sql = String.format(Queries.regLibrarian, id, hall, name, secondName, birthdate);
+        System.out.println(sql);
         connection.createStatement().executeQuery(sql);
     }
 
