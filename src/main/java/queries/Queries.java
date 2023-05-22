@@ -5,14 +5,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Queries {
-
+    private static Map<String, String> librarianQueriesSql;
     private static Map<String, String[]> librarianQueriesArgs;
 
     public static Map<String, String[]> getLibrarianQueriesArgs() {
         return librarianQueriesArgs;
     }
 
-    private static Map<String, String> librarianQueriesSql;
     public static String popularCompositions = "WITH COUNT_EDITIONS AS (SELECT Book, COUNT(*) AS Count" +
             " FROM TakeRegistration GROUP BY Book)," +
             " COUNT_BOOKS AS (SELECT Book, SUM(Count) AS Count FROM Bibliofond JOIN COUNT_EDITIONS" +
@@ -28,11 +27,11 @@ public class Queries {
             " SELECT NomenclatureNumber, Name FROM Bibliofond JOIN Books ON Bibliofond.Book = Books.ID" +
             " WHERE Books.ID IN (SELECT * FROM BOOKS_WITH_COMP)";
     public static String libraries = "SELECT Name FROM Libraries";
-    public static String registrationReader = "INSERT INTO READERS VALUES(%s, %s, %s, %s, %s)";
-    public static String regScientist = "INSERT INTO SCIENTIST VALUES(%s, %s, %s, %s)";
-    public static String regStudent = "INSERT INTO STUDENTS VALUES(%s, %s, %s, %s, %s)";
-    public static String regTeacher = "INSERT INTO TEACHERS VALUES(%s, %s, %s)";
-    public static String regProletarian = "INSERT INTO PROLETARIANS VALUES(%s, %s, %s)";
+    public static String registrationReader = "INSERT INTO READERS VALUES(%s, '%s', '%s', to_date('%s', 'YYYY-MM-DD'), %s)";
+    public static String regScientist = "INSERT INTO SCIENTIST VALUES(%s, '%s', '%s', '%s')";
+    public static String regStudent = "INSERT INTO STUDENTS VALUES(%s, '%s', '%s', %s, %s)";
+    public static String regTeacher = "INSERT INTO TEACHERS VALUES(%s, '%s', '%s')";
+    public static String regProletarian = "INSERT INTO PROLETARIANS VALUES(%s, '%s', '%s')";
     public static String regPensioner = "INSERT INTO PENSIONERS VALUES(%s)";
     public static String regLibrarian = "INSERT INTO LIBRARIANS VALUES(%s, %s, '%s', '%s', to_date('%s', 'YYYY-MM-DD'))";
 
