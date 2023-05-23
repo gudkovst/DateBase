@@ -1,5 +1,6 @@
 package queries;
 
+import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,10 @@ public class Queries {
     public static String regProletarian = "INSERT INTO PROLETARIANS VALUES(%s, '%s', '%s')";
     public static String regPensioner = "INSERT INTO PENSIONERS VALUES(%s)";
     public static String regLibrarian = "INSERT INTO LIBRARIANS VALUES(%s, %s, '%s', '%s', to_date('%s', 'YYYY-MM-DD'))";
+    public static String regComposition = "INSERT INTO Composition VALUES(%s, '%s', '%s', '%s')";
+    public static String regBook = "INSERT INTO BOOKS VALUES(%s, '%s', '%s')";
+    public static String regContent = "INSERT INTO CONTENTBOOKS VALUES(%s, %s, %s, %s, %s)";
+    public static String regBibliofond = "INSERT INTO BIBLIOFOND VALUES(%s, %s, to_date('%s', 'YYYY-MM-DD'), NULL, %s, %s, %s, %s)";
 
 
     public static void setLibrarianQueries(){
