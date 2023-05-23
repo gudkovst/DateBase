@@ -5,7 +5,6 @@ import queries.Queries;
 import queries.TypeSearchBook;
 
 import java.sql.*;
-import java.util.Map;
 
 public class Requester {
     private Connection connection;
@@ -40,7 +39,7 @@ public class Requester {
     public ResultSet libraries() throws SQLException {
         return connection.createStatement().executeQuery(Queries.libraries);
     }
-    
+
     public void registerReader(Integer id, String name, String secondName, Date birthdate, Integer library) throws SQLException {
         String sql = String.format(Queries.registrationReader, id, name, secondName, birthdate, library);
         connection.createStatement().executeQuery(sql);
@@ -76,10 +75,35 @@ public class Requester {
         connection.createStatement().executeQuery(sql);
     }
 
-    public Statement librarianQueries(String query, String[] args) throws SQLException {
+    public ResultSet librarianQueries(String query, String[] args) throws SQLException {
         Statement statement = connection.createStatement();
         String sql = Queries.getLibrarianQuerySql(query);
-        statement.executeQuery(String.format(sql, args));
-        return statement;
+        return statement.executeQuery(String.format(sql, args));
+    }
+
+    public ResultSet popularCompositions() throws SQLException {
+        Statement statement = connection.createStatement();
+        String sql = Queries.popularCompositions;
+        return statement.executeQuery(sql);
+    }
+
+    public void regComposition(int id, String name, String author, String category) throws SQLException {
+        String sql = String.format(Queries.regComposition, id, name, author, category);
+        connection.createStatement().executeQuery(sql);
+    }
+
+    public void regBook(int id, String name, String type) throws SQLException {
+        String sql = String.format(Queries.regBook, id, name, type);
+        connection.createStatement().executeQuery(sql);
+    }
+
+    public void regContent(int id, int book, int composition, int start, int end) throws SQLException {
+        String sql = String.format(Queries.regContent, id, book, composition, start, end);
+        connection.createStatement().executeQuery(sql);
+    }
+
+    public void regBibliofond(int id, int book, Date dateReg, int time, int hall, int rack, int shelf) throws SQLException {
+        String sql = String.format(Queries.regBibliofond, id, book, dateReg, time, hall, rack, shelf);
+        connection.createStatement().executeQuery(sql);
     }
 }
