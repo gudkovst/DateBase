@@ -14,10 +14,11 @@ public class Queries {
 
     public static String popularCompositions = "WITH COUNT_EDITIONS AS (SELECT Book, COUNT(*) AS Count" +
             " FROM TakeRegistration GROUP BY Book)," +
-            " COUNT_BOOKS AS (SELECT COUNT_EDITIONS.Book, SUM(Count) AS Count FROM Bibliofond JOIN COUNT_EDITIONS" +
-            " ON Bibliofond.NomenclatureNumber = COUNT_EDITIONS.Book GROUP BY COUNT_EDITIONS.Book)" +
-            " SELECT Composition, SUM(Count) AS Count FROM ContentBooks JOIN COUNT_BOOKS USING (Book)" +
-            " GROUP BY Composition ORDER BY Count DESC";
+            " COUNT_BOOKS AS (SELECT Bibliofond.Book, SUM(Count) AS Count FROM Bibliofond JOIN COUNT_EDITIONS" +
+            " ON Bibliofond.NomenclatureNumber = COUNT_EDITIONS.Book GROUP BY Bibliofond.Book)," +
+            " COUNT_COMPOSITIONS AS (SELECT Composition, SUM(Count) AS Count FROM ContentBooks JOIN COUNT_BOOKS USING (Book)" +
+            " GROUP BY Composition) SELECT Name, Count FROM Composition JOIN COUNT_COMPOSITIONS" +
+            " ON Composition.ID = COUNT_COMPOSITIONS.Composition ORDER BY Count DESC";
     public static String searchBookName = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name = '%s')," +
             " BOOKS_WITH_COMP AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))" +
             " SELECT NomenclatureNumber, Name FROM Bibliofond JOIN Books ON Bibliofond.Book = Books.ID" +
@@ -54,7 +55,7 @@ public class Queries {
         librarianQueriesArgs.put("Formular of reader out his library", new String[]{"reader second name", "reader name", "begin date", "end date"});
         librarianQueriesSql.put("Formular of reader out his library", readerFormularOut);
         librarianQueriesArgs.put("Books issued from given shelf", new String[]{"shelf number", "library number"});
-        librarianQueriesSql.put("Books issued from given rack", booksIssuedFromGivenShelf);
+        librarianQueriesSql.put("Books issued from given shelf", booksIssuedFromGivenShelf);
         librarianQueriesArgs.put("Work given librarian in period", new String[]{"librarian second name", "librarian name", "begin date", "end date"});
         librarianQueriesSql.put("Work given librarian in period", workGivenLibrarianInPeriod);
         librarianQueriesArgs.put("Work all librarians in period", new String[]{"begin date", "end date"});
@@ -72,21 +73,22 @@ public class Queries {
     public static String getLibrarianQuerySql(String query){
         return librarianQueriesSql.get(query);
     }
-    private static String readersWithComposition = "WITH COMPOSITION AS (SELECT ID FROM Composition WHERE Name = '%s'" +
-            " INTEREST_BOOKS AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITION))," +
+    private static String readersWithComposition = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name = '%s')," +
+            " INTEREST_BOOKS AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))," +
             " NOMENCLATURE AS (SELECT NomenclatureNumber FROM Bibliofond WHERE Book IN (SELECT * FROM INTEREST_BOOKS))," +
             " INTEREST_READERS AS (SELECT Reader FROM TakeRegistration LEFT JOIN ReturnRegistration USING (ID)" +
-            " WHERE ReturnRegistration.ID IS NULL AND Book IN (SELECT * FROM NOMENCLATURE))" +
+            " WHERE ReturnRegistration.dateop IS NULL AND Book IN (SELECT * FROM NOMENCLATURE))" +
             " SELECT * FROM Readers WHERE ID IN (SELECT * FROM INTEREST_READERS)";
     private static String readersWithBook = "WITH EDITION AS (SELECT ID FROM Books WHERE Name = '%s')," +
             " NOMENCLATURE AS (SELECT NomenclatureNumber FROM Bibliofond WHERE Book IN (SELECT * FROM EDITION))," +
             " INTEREST_READERS AS (SELECT Reader FROM TakeRegistration LEFT JOIN ReturnRegistration USING (ID)" +
-            " WHERE ReturnRegistration.ID IS NULL AND Book IN (SELECT * FROM NOMENCLATURE))" +
+            " WHERE ReturnRegistration.DATEOP IS NULL AND Book IN (SELECT * FROM NOMENCLATURE))" +
             " SELECT * FROM Readers WHERE ID IN (SELECT * FROM INTEREST_READERS)";
-    private static String takenInPeriod = "WITH COMPOSITION AS (SELECT ID FROM Composition WHERE Name = '%s')," +
-            " INTEREST_BOOKS AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITION))," +
-            " SELECT Readers.*, Books.Name FROM Books, TakeRegistration JOIN Readers ON TakeRegistration.Reader = Readers.ID" +
-            " WHERE TakeRegistration.Dateop BETWEEN '%s' AND '%s'";
+    private static String takenInPeriod = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name = '%s')," +
+            " INTEREST_BOOKS AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))" +
+            " SELECT Readers.* FROM Books, TakeRegistration JOIN Readers ON TakeRegistration.Reader = Readers.ID" +
+            " WHERE TakeRegistration.Dateop BETWEEN '%s'" +
+            " AND '%s' AND Books.ID IN (SELECT * FROM INTEREST_BOOKS)";
     private static String readerFormularOn = "WITH INTEREST_READER AS (SELECT ID, Library FROM Readers " +
             " WHERE SecondName = '%s' AND Name = '%s')," +
             " LIBR AS (SELECT Librarians.ID AS Librarian, Libraries.ID AS Library " +
@@ -109,30 +111,32 @@ public class Queries {
             " WHERE Bibliofond.Book IN (SELECT * FROM EDITIONS)";
     private static String booksIssuedFromGivenShelf = "WITH BOOKS_IN_INTEREST_PLACE AS (SELECT NomenclatureNumber FROM Bibliofond" +
             " WHERE ShelfNumber = %s AND HallNumber IN (SELECT Halls.ID FROM Halls JOIN Libraries ON Halls.Library = Libraries.ID" +
-            " WHERE Libraries.ID = 25))," +
+            " WHERE Libraries.ID = %s))," +
             " TAKING_BOOKS AS (SELECT Book FROM TakeRegistration LEFT JOIN ReturnRegistration USING (ID)" +
-            " WHERE ReturnRegistration.ID IS NULL AND Book IN (SELECT * FROM BOOKS_IN_INTEREST_PLACE))" +
+            " WHERE ReturnRegistration.DateOp IS NULL AND Book IN (SELECT * FROM BOOKS_IN_INTEREST_PLACE))" +
             " SELECT DISTINCT Name FROM Books WHERE ID IN (SELECT * FROM TAKING_BOOKS)";
     private static String workGivenLibrarianInPeriod = "WITH INTEREST_LIBRARIAN AS (SELECT ID FROM Librarians" +
             " WHERE SecondName = '%s' AND Name = '%s')," +
             " TAKE_OPERS AS (SELECT Reader, Dateop FROM TakeRegistration WHERE Librarian IN (SELECT * FROM INTEREST_LIBRARIAN))," +
             " RET_OPERS AS (SELECT Reader, ReturnRegistration.Dateop AS Dateop FROM TakeRegistration JOIN ReturnRegistration USING (ID)" +
             " WHERE ReturnRegistration.Librarian IN (SELECT * FROM INTEREST_LIBRARIAN))" +
-            " SELECT DISTINCT SecondName, Name" +
-            " FROM (Readers JOIN TAKE_OPERS ON Readers.ID = TAKE_OPERS.Reader UNION Readers JOIN RET_OPERS ON  Readers.ID = RET_OPERS.Reader)\n" +
+            " SELECT DISTINCT SecondName, Name FROM (SELECT * FROM (Readers JOIN TAKE_OPERS ON Readers.ID = TAKE_OPERS.Reader)" +
+            " UNION SELECT * FROM (Readers JOIN RET_OPERS ON  Readers.ID = RET_OPERS.Reader))" +
             " WHERE Dateop BETWEEN '%s' AND '%s'";
     private static String workAllLibrariansInPeriod = "WITH OPERS AS (SELECT Librarian, COUNT(*) AS COUNT_OPERS" +
             " FROM (SELECT ID, Librarian, Dateop FROM TakeRegistration UNION SELECT ID, Librarian, Dateop FROM ReturnRegistration)" +
-            " WHERE Date BETWEEN '%s' AND '%s' GROUP BY Librarian)" +
-            " SELECT SecondName, Name, OPERS.COUNT_OPERS FROM Librarians JOIN OPERS ON Librarians.ID = OPERS.Librarian";
+            " WHERE Dateop BETWEEN '%s' AND '%s' GROUP BY Librarian)" +
+            " SELECT SecondName, Name, OPERS.COUNT_OPERS AS Count FROM Librarians JOIN OPERS ON Librarians.ID = OPERS.Librarian";
     private static String getReaderDebtor = "WITH OVERDUE AS (SELECT Reader FROM TakeRegistration LEFT JOIN ReturnRegistration USING (ID)" +
-            " WHERE ReturnRegistration.ID IS NULL AND DateReturn < CURRENT_DATE())" +
+            " WHERE ReturnRegistration.DateOp IS NULL AND DateReturn < CURRENT_DATE)" +
             " SELECT SecondName, Name FROM Readers WHERE ID IN (SELECT * FROM OVERDUE)";
-    private static String getNewBooks = "WITH APPLY AS (SELECT Book FROM Bibliofond WHERE DateRegistration BETWEEN '%s' AND '%s')" +
+    private static String getNewBooks = "WITH APPLY AS (SELECT Book FROM Bibliofond WHERE DateRegistration" +
+            " BETWEEN '%s' AND '%s')" +
             " SELECT DISTINCT Name FROM Books WHERE ID IN (SELECT * FROM APPLY)";
     private static String librariansFromHall = "SELECT SecondName, Name FROM Librarians WHERE HallNumber = %s";
-    private static String readersNotVisitInPeriod = "WITH READERS_IN_PERIOD AS (SELECT Readers FROM (SELECT ID, Readers, Dateop" +
-            " FROM TakeRegistration UNION SELECT ID, Readers, ReturnRegistration.Dateop AS Dateop" +
-            " FROM TakeRegistration JOIN ReturnRegistration USING (ID)) WHERE Dateop BETWEEN '%s' AND '%s')" +
+    private static String readersNotVisitInPeriod = "WITH READERS_IN_PERIOD AS (SELECT Reader FROM (SELECT ID, Reader, Dateop" +
+            " FROM TakeRegistration UNION SELECT ID, Reader, ReturnRegistration.Dateop AS Dateop" +
+            " FROM TakeRegistration JOIN ReturnRegistration USING (ID)) WHERE Dateop" +
+            " BETWEEN '%s' AND '%s')" +
             " SELECT SecondName, Name FROM Readers WHERE ID NOT IN (SELECT * FROM READERS_IN_PERIOD)";
 }
