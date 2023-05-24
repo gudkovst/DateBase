@@ -58,6 +58,8 @@ public class ViewSwingLibrarian implements IViewLibrarian{
                         headView.handleException(ex, this::librarianMenu);
                     }
                 });
+                form.add(ok);
+                headView.draw(form);
             });
             queriesButtons.add(button);
         }
@@ -76,6 +78,7 @@ public class ViewSwingLibrarian implements IViewLibrarian{
         content.addActionListener(e -> setContent());
         JButton bibliofond = new JButton("Registry book in bibliofond");
         bibliofond.addActionListener(e -> regBibliofond());
+        headView.draw(new Component[]{label, composition, books, content, bibliofond});
     }
 
     private void addComposition(){

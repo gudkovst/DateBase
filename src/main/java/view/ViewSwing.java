@@ -120,7 +120,7 @@ public class ViewSwing extends JFrame implements IView, Runnable {
         label.setHorizontalAlignment(JLabel.CENTER);
         JButton ret = new JButton("Return");
         ret.setMnemonic(KeyEvent.VK_ENTER);
-        ret.addActionListener(e -> startMenu());
+        ret.addActionListener(e -> returnStartMenu());
         draw(new Component[]{label, ret});
     }
 
@@ -142,26 +142,32 @@ public class ViewSwing extends JFrame implements IView, Runnable {
         return form;
     }
 
+    private String[][] convert(List<String[]> list, int count){
+        String[][] array = new String[list.size()][count];
+        for (int i = 0; i < list.size(); i++)
+            System.arraycopy(list.get(i), 0, array[i], 0, count);
+        return array;
+    }
+
+
     void showResults(ResultSet resultSet, FunctionPointer f) throws SQLException {
         int countColumns = resultSet.getMetaData().getColumnCount();
         String[] columnNames = new String[countColumns];
-        for (int i = 0; i < countColumns; i++)
-            columnNames[i] = resultSet.getMetaData().getColumnName(i);
-        resultSet.last();
-        int countRows = resultSet.getRow();
-        String[][] data = new String[countRows][countColumns];
-        resultSet.first();
-        for (int i = 0; i < countRows; i++) {
+        for (int i = 1; i < countColumns + 1; i++)
+            columnNames[i - 1] = resultSet.getMetaData().getColumnName(i);
+        List<String[]> data = new ArrayList<>();
+        while (resultSet.next()){
+            String[] row = new String[countColumns];
             for (int j = 0; j < countColumns; j++)
-                data[i][j] = resultSet.getString(j);
-            resultSet.next();
+                row[j] = resultSet.getString(columnNames[j]);
+            data.add(row);
         }
-        JTable table = new JTable(data, columnNames);
+        JTable table = new JTable(convert(data, countColumns), columnNames);
         JScrollPane pane = new JScrollPane(table);
         JButton ok = new JButton("Return");
         ok.setMnemonic(KeyEvent.VK_ENTER);
         ok.addActionListener(e -> f.function());
-        draw(new Component[]{pane});
+        draw(new Component[]{pane, ok});
     }
 
     void handleException(Exception e, FunctionPointer f){
