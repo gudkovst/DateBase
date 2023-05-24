@@ -1,6 +1,5 @@
 package queries;
 
-import lombok.Getter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,8 +14,8 @@ public class Queries {
 
     public static String popularCompositions = "WITH COUNT_EDITIONS AS (SELECT Book, COUNT(*) AS Count" +
             " FROM TakeRegistration GROUP BY Book)," +
-            " COUNT_BOOKS AS (SELECT Book, SUM(Count) AS Count FROM Bibliofond JOIN COUNT_EDITIONS" +
-            " ON Bibliofond.NomenclatureNumber = COUNT_EDITIONS.Book GROUP BY Book)" +
+            " COUNT_BOOKS AS (SELECT COUNT_EDITIONS.Book, SUM(Count) AS Count FROM Bibliofond JOIN COUNT_EDITIONS" +
+            " ON Bibliofond.NomenclatureNumber = COUNT_EDITIONS.Book GROUP BY COUNT_EDITIONS.Book)" +
             " SELECT Composition, SUM(Count) AS Count FROM ContentBooks JOIN COUNT_BOOKS USING (Book)" +
             " GROUP BY Composition ORDER BY Count DESC";
     public static String searchBookName = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name = '%s')," +
@@ -27,7 +26,7 @@ public class Queries {
             " BOOKS_WITH_COMP AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))" +
             " SELECT NomenclatureNumber, Name FROM Bibliofond JOIN Books ON Bibliofond.Book = Books.ID" +
             " WHERE Books.ID IN (SELECT * FROM BOOKS_WITH_COMP)";
-    public static String libraries = "SELECT Name FROM Libraries";
+    public static String libraries = "SELECT ID, Name FROM Libraries";
     public static String registrationReader = "INSERT INTO READERS VALUES(%s, '%s', '%s', to_date('%s', 'YYYY-MM-DD'), %s)";
     public static String regScientist = "INSERT INTO SCIENTIST VALUES(%s, '%s', '%s', '%s')";
     public static String regStudent = "INSERT INTO STUDENTS VALUES(%s, '%s', '%s', %s, %s)";
