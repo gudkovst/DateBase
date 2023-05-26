@@ -159,7 +159,7 @@ public class ViewSwingLibrarian implements IViewLibrarian{
                 requester.regBibliofond(id, book, date, time, hall, rack, shelf);
                 librarianMenu();
             } catch (SQLException ex) {
-                headView.handleException(ex, this::setContent);
+                headView.handleException(ex, this::regBibliofond);
             }
         });
         form.add(ok);
