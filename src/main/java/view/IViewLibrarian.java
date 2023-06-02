@@ -5,4 +5,5 @@ public interface IViewLibrarian {
     public void librarianSelect();
     public void librarianRegistryBook();
     public void librarianRegistryLibrarian();
+    public void changeData(String table);
 }

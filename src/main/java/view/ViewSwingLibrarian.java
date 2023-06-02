@@ -1,6 +1,7 @@
 package view;
 
 import application.Requester;
+import config.Config;
 import queries.Queries;
 
 import javax.swing.*;
@@ -34,7 +35,9 @@ public class ViewSwingLibrarian implements IViewLibrarian{
         regBook.addActionListener(e -> librarianRegistryBook());
         JButton regLibrarian = new JButton("Registry new librarian");
         regLibrarian.addActionListener(e -> librarianRegistryLibrarian());
-        headView.draw(new Component[]{label, select, regBook, regLibrarian});
+        JButton change = new JButton("Work with data");
+        change.addActionListener(e -> showTables());
+        headView.draw(new Component[]{label, select, regBook, regLibrarian, change});
     }
 
     @Override
@@ -198,5 +201,50 @@ public class ViewSwingLibrarian implements IViewLibrarian{
         });
         form.add(ok);
         headView.draw(form);
+    }
+
+    private void showTables(){
+        int count = Config.tableNames.length;
+        Component[] tables = new Component[count];
+        for (int i = 0; i < count; i++) {
+            JButton button = new JButton(Config.tableNames[i]);
+            button.addActionListener(e -> changeData(button.getText()));
+            tables[i] = button;
+        }
+        headView.draw(tables);
+    }
+
+    @Override
+    public void changeData(String tableName){
+        try {
+            JScrollPane table = headView.getResults(requester.getTable(tableName));
+            JLabel deleteLabel = new JLabel("Select id for delete:");
+            deleteLabel.setHorizontalAlignment(JLabel.CENTER);
+            JTextField deleteField = new JTextField();
+            deleteField.setHorizontalAlignment(JTextField.CENTER);
+            JLabel labelSet = new JLabel("Enter that your want update in field1=value1, field12=value2");
+            labelSet.setHorizontalAlignment(JLabel.CENTER);
+            JTextField fieldSet = new JTextField();
+            fieldSet.setHorizontalAlignment(JTextField.CENTER);
+            JLabel labelCond = new JLabel("Enter condition for update");
+            labelCond.setHorizontalAlignment(JLabel.CENTER);
+            JTextField fieldCond = new JTextField();
+            fieldCond.setHorizontalAlignment(JTextField.CENTER);
+            JButton ok = new JButton("OK");
+            ok.setMnemonic(KeyEvent.VK_ENTER);
+            ok.addActionListener(e -> {
+                try {
+                    requester.changeData(deleteField.getText(), fieldSet.getText(), fieldCond.getText(), tableName);
+                    librarianMenu();
+                } catch (SQLException ex) {
+                    headView.handleException(ex, this::librarianMenu);
+                }
+            });
+            JButton ret = new JButton("Return");
+            ret.addActionListener(e -> librarianMenu());
+            headView.draw(new Component[]{table, deleteLabel, deleteField, labelSet, fieldSet, labelCond, fieldCond, ok, ret});
+        } catch (SQLException ex) {
+            headView.handleException(ex, this::librarianMenu);
+        }
     }
 }

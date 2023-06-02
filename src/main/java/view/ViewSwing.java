@@ -116,7 +116,7 @@ public class ViewSwing extends JFrame implements IView, Runnable {
 
     @Override
     public void showInfo(){
-        JLabel label = new JLabel("Information system of the library fund of the city.\nDeveloped by Gudkov S. A. in May 2023");
+        JLabel label = new JLabel("Information system of the library fund of the city.\n\tDeveloped by Gudkov S. A. in May 2023");
         label.setHorizontalAlignment(JLabel.CENTER);
         JButton ret = new JButton("Return");
         ret.setMnemonic(KeyEvent.VK_ENTER);
@@ -149,8 +149,7 @@ public class ViewSwing extends JFrame implements IView, Runnable {
         return array;
     }
 
-
-    void showResults(ResultSet resultSet, FunctionPointer f) throws SQLException {
+    JScrollPane getResults(ResultSet resultSet) throws SQLException {
         int countColumns = resultSet.getMetaData().getColumnCount();
         String[] columnNames = new String[countColumns];
         for (int i = 1; i < countColumns + 1; i++)
@@ -163,11 +162,14 @@ public class ViewSwing extends JFrame implements IView, Runnable {
             data.add(row);
         }
         JTable table = new JTable(convert(data, countColumns), columnNames);
-        JScrollPane pane = new JScrollPane(table);
+        return new JScrollPane(table);
+    }
+
+    void showResults(ResultSet resultSet, FunctionPointer f) throws SQLException {
         JButton ok = new JButton("Return");
         ok.setMnemonic(KeyEvent.VK_ENTER);
         ok.addActionListener(e -> f.function());
-        draw(new Component[]{pane, ok});
+        draw(new Component[]{getResults(resultSet), ok});
     }
 
     void handleException(Exception e, FunctionPointer f){
