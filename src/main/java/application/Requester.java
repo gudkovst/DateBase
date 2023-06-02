@@ -106,4 +106,21 @@ public class Requester {
         String sql = String.format(Queries.regBibliofond, id, book, dateReg, time, hall, rack, shelf);
         connection.createStatement().executeQuery(sql);
     }
+
+    public ResultSet getTable(String table) throws SQLException{
+        String sql = "SELECT * FROM " + table;
+        return connection.createStatement().executeQuery(sql);
+    }
+
+    public void changeData(String delID, String set, String cond, String table) throws SQLException {
+        Statement statement = connection.createStatement();
+        if (!(set.isEmpty() && cond.isEmpty())){
+            String sqlUpdate = "UPDATE " + table + " SET " + set + " WHERE " + cond;
+            statement.executeQuery(sqlUpdate);
+        }
+        if (!delID.isEmpty()){
+            String sqlDel = "DELETE FROM " + table + " WHERE ID = " + delID;
+            statement.executeQuery(sqlDel);
+        }
+    }
 }
