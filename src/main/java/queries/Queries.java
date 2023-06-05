@@ -17,13 +17,13 @@ public class Queries {
             " COUNT_BOOKS AS (SELECT Bibliofond.Book, SUM(Count) AS Count FROM Bibliofond JOIN COUNT_EDITIONS" +
             " ON Bibliofond.NomenclatureNumber = COUNT_EDITIONS.Book GROUP BY Bibliofond.Book)," +
             " COUNT_COMPOSITIONS AS (SELECT Composition, SUM(Count) AS Count FROM ContentBooks JOIN COUNT_BOOKS USING (Book)" +
-            " GROUP BY Composition) SELECT Name, Count FROM Composition JOIN COUNT_COMPOSITIONS" +
+            " GROUP BY Composition) SELECT Name, Count AS Количество FROM Composition JOIN COUNT_COMPOSITIONS" +
             " ON Composition.ID = COUNT_COMPOSITIONS.Composition ORDER BY Count DESC";
-    public static String searchBookName = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name = '%s')," +
+    public static String searchBookName = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name LIKE '%%%s%%')," +
             " BOOKS_WITH_COMP AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))" +
             " SELECT NomenclatureNumber, Name FROM Bibliofond JOIN Books ON Bibliofond.Book = Books.ID" +
             " WHERE Books.ID IN (SELECT * FROM BOOKS_WITH_COMP)";
-    public static String searchBookAuthor = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Author = '%s')," +
+    public static String searchBookAuthor = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Author LIKE '%%%s%%')," +
             " BOOKS_WITH_COMP AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))" +
             " SELECT NomenclatureNumber, Name FROM Bibliofond JOIN Books ON Bibliofond.Book = Books.ID" +
             " WHERE Books.ID IN (SELECT * FROM BOOKS_WITH_COMP)";
@@ -73,24 +73,24 @@ public class Queries {
     public static String getLibrarianQuerySql(String query){
         return librarianQueriesSql.get(query);
     }
-    private static String readersWithComposition = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name = '%s')," +
+    private static String readersWithComposition = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE LIKE '%%%s%%')," +
             " INTEREST_BOOKS AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))," +
             " NOMENCLATURE AS (SELECT NomenclatureNumber FROM Bibliofond WHERE Book IN (SELECT * FROM INTEREST_BOOKS))," +
             " INTEREST_READERS AS (SELECT Reader FROM TakeRegistration LEFT JOIN ReturnRegistration USING (ID)" +
             " WHERE ReturnRegistration.dateop IS NULL AND Book IN (SELECT * FROM NOMENCLATURE))" +
             " SELECT * FROM Readers WHERE ID IN (SELECT * FROM INTEREST_READERS)";
-    private static String readersWithBook = "WITH EDITION AS (SELECT ID FROM Books WHERE Name = '%s')," +
+    private static String readersWithBook = "WITH EDITION AS (SELECT ID FROM Books WHERE Name LIKE '%%%s%%')," +
             " NOMENCLATURE AS (SELECT NomenclatureNumber FROM Bibliofond WHERE Book IN (SELECT * FROM EDITION))," +
             " INTEREST_READERS AS (SELECT Reader FROM TakeRegistration LEFT JOIN ReturnRegistration USING (ID)" +
             " WHERE ReturnRegistration.DATEOP IS NULL AND Book IN (SELECT * FROM NOMENCLATURE))" +
             " SELECT * FROM Readers WHERE ID IN (SELECT * FROM INTEREST_READERS)";
-    private static String takenInPeriod = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name = '%s')," +
+    private static String takenInPeriod = "WITH COMPOSITIONS AS (SELECT ID FROM Composition WHERE Name LIKE '%%%s%%')," +
             " INTEREST_BOOKS AS (SELECT Book FROM ContentBooks WHERE Composition IN (SELECT * FROM COMPOSITIONS))" +
             " SELECT Readers.* FROM Books, TakeRegistration JOIN Readers ON TakeRegistration.Reader = Readers.ID" +
             " WHERE TakeRegistration.Dateop BETWEEN '%s'" +
             " AND '%s' AND Books.ID IN (SELECT * FROM INTEREST_BOOKS)";
     private static String readerFormularOn = "WITH INTEREST_READER AS (SELECT ID, Library FROM Readers " +
-            " WHERE SecondName = '%s' AND Name = '%s')," +
+            " WHERE SecondName LIKE '%%%s%%' AND Name LIKE '%%%s%%')," +
             " LIBR AS (SELECT Librarians.ID AS Librarian, Libraries.ID AS Library " +
             " FROM Librarians JOIN Halls ON Librarians.HallNumber = Halls.ID JOIN Libraries ON Halls.Library = Libraries.ID)," +
             " TAKE_BY_READER AS ( SELECT Book, Librarian FROM TakeRegistration" +
@@ -100,7 +100,7 @@ public class Queries {
             " SELECT DISTINCT Books.Name FROM Books JOIN Bibliofond ON Books.ID = Bibliofond.Book" +
             " WHERE Bibliofond.Book IN (SELECT * FROM EDITIONS)";
     private static String readerFormularOut = "WITH INTEREST_READER AS (SELECT ID, Library FROM Readers" +
-            " WHERE SecondName = '%s' AND Name = '%s')," +
+            " WHERE SecondName LIKE '%%%s%%' AND Name LIKE '%%%s%%')," +
             " LIBR AS (SELECT Librarians.ID AS Librarian, Libraries.ID AS Library " +
             " FROM Librarians JOIN Halls ON Librarians.HallNumber = Halls.ID JOIN Libraries ON Halls.Library = Libraries.ID)," +
             " TAKE_BY_READER AS (SELECT Book, Librarian FROM TakeRegistration" +
@@ -116,7 +116,7 @@ public class Queries {
             " WHERE ReturnRegistration.DateOp IS NULL AND Book IN (SELECT * FROM BOOKS_IN_INTEREST_PLACE))" +
             " SELECT DISTINCT Name FROM Books WHERE ID IN (SELECT * FROM TAKING_BOOKS)";
     private static String workGivenLibrarianInPeriod = "WITH INTEREST_LIBRARIAN AS (SELECT ID FROM Librarians" +
-            " WHERE SecondName = '%s' AND Name = '%s')," +
+            " WHERE SecondName LIKE '%%%s%%' AND Name LIKE '%%%s%%')," +
             " TAKE_OPERS AS (SELECT Reader, Dateop FROM TakeRegistration WHERE Librarian IN (SELECT * FROM INTEREST_LIBRARIAN))," +
             " RET_OPERS AS (SELECT Reader, ReturnRegistration.Dateop AS Dateop FROM TakeRegistration JOIN ReturnRegistration USING (ID)" +
             " WHERE ReturnRegistration.Librarian IN (SELECT * FROM INTEREST_LIBRARIAN))" +
